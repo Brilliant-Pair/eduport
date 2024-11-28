@@ -1,0 +1,116 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: web
+    image: web
+    build: 
+       context: .
+       dockerfile: ./docker/local/django/Dockerfile
+    command: /start.sh
+    restart: always
+    volumes:
+      - ./core:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db 
+    networks:
+      - eduport-network
+
+  db:
+    container_name: db
+    build:
+       context: .
+       dockerfile: ./docker/local/postgres/Dockerfile
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_backup:/backups         
+    env_file:
+      - ./.envs/.local/.postgres  
+    networks:
+      - eduport-network  
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+        - "5050:80"
+    depends_on:
+      - db     
+    networks:
+      - eduport-network
+  
+  redis:
+    container_name: redis
+    image: redis
+    restart: always
+    networks:
+      - eduport-network
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:management
+    restart: always
+    ports:
+      - '5672:5672'
+      - '15672:15672'  
+    networks:
+      - eduport-network
+
+  celery_worker:
+      container_name: celery_worker
+      build:
+        context: .
+        dockerfile: ./docker/local/django/Dockerfile
+      command: /start-celeryworker.sh
+      volumes:
+        - ./core:/app
+      env_file:
+        - ./.envs/.local/.django
+        - ./.envs/.local/.postgres
+      depends_on:
+        - db
+        - redis
+        - rabbitmq
+      networks:
+        - eduport-network
+
+  flower:
+    container_name: flower
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-flower.sh
+    volumes:
+      - ./core:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "5555:5555"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    networks:
+      - eduport-network
+
+
+volumes:
+  static_volume:
+  media_volume:
+  local_postgres_data:
+  local_postgres_backup:
+
+networks:
+  eduport-network:
+    driver: bridge
