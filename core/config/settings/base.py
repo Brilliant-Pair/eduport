@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from os import path
 from pathlib import Path
+
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
 # Application definition
 THIRD_PARTY_APPS = []
 
-LOCAL_APPS = []
+LOCAL_APPS = ["apps.accounts.apps.AccountsConfig"]
 
 
 INSTALLED_APPS = [
@@ -32,7 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     *THIRD_PARTY_APPS,
-    *LOCAL_APPS
+    *LOCAL_APPS,
 ]
 
 MIDDLEWARE = [
@@ -102,9 +103,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = path.join(BASE_DIR, "static")
-STATICFILES_DIR = [
-    path.join(BASE_DIR, "core", "assets")
-]
+STATICFILES_DIR = [path.join(BASE_DIR, "core", "assets")]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = path.join(BASE_DIR, "media")
