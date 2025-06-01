@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from . import models
 
 
@@ -23,7 +24,7 @@ class ApplyTeacherAdmin(admin.ModelAdmin):
         "phone",
         "email",
         "gender",
-        "status",    
+        "status",
         "updated_at",
     )
     list_editable = ("status",)
