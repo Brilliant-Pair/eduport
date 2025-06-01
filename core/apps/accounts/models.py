@@ -17,15 +17,12 @@ from . import validators
 
 
 class BaseModel(models.Model):
-    id = models.BigAutoField(primary_key=True, editable=False)
-    uuid = models.UUIDField(
-        default=uuid.uuid4, editable=False, unique=True, db_index=True
-    )
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
+        ordering = ["-created_at", "-updated_at"]
 
 
 class UserManager(BaseUserManager):
@@ -100,11 +97,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
-    class Role(models.TextChoices):
-        STUDENT = "S", _("STUDENT")
-        INSTRUCTOR = "I", _("INSTRUCTOR")
-        ADMIN = "A", _("ADMIN")
-
+    id = models.BigAutoField(primary_key=True, editable=False)
+    uuid = models.UUIDField(
+        default=uuid.uuid4, editable=False, unique=True, db_index=True
+    )
     email = models.EmailField(
         verbose_name=_("email"),
         max_length=255,
@@ -119,7 +115,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         null=True,
         help_text=_("Optional. 255 characters or fewer."),
     )
-    role = models.CharField(verbose_name=_("role"), choices=Role.choices)
 
     is_active = models.BooleanField(verbose_name=_("active status"), default=False)
     is_staff = models.BooleanField(verbose_name=_("staff status"), default=False)
@@ -145,7 +140,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return f"{self.username}" if username else f"{self.email}"
 
 
-class Profile(models.Model):
+class Profile(BaseModel):
     class Gender(models.TextChoices):
         MALE = (
             "M",
@@ -232,90 +227,76 @@ class Profile(models.Model):
         return self.user.get_full_name() if self.user else ""
 
 
-class Teacher(models.Model):
-    STATUS_CHOICES = (
-        ("active", _("Active")),
-        ("inactive", _("Inactive")),
-    )
+class Instructor(BaseModel):
 
     user = models.OneToOneField(
         get_user_model(),
         on_delete=models.CASCADE,
         verbose_name=_("User"),
-        related_name="teacher",
+        related_name="instructor",
     )
-    status = models.CharField(
-        _("Status"),
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="active",
+    status = models.BooleanField(verbose_name="instructor status", default=False)
+    birthdate = models.DateField(verbose_name=_("date of birth"))
+    experience_year = models.PositiveSmallIntegerField(
+        verbose_name=_("experience years")
     )
-
-    experience_year = models.PositiveIntegerField(
-        _("Experience Year"),
+    job_title = models.CharField(verbose_name=_("job title"), max_length=100)
+    job_start_date = models.DateField(verbose_name=_("job start date"))
+    job_end_date = models.DateField(
+        verbose_name=_("job end date"), null=True, blank=True
     )
-    job_title = models.CharField(_("Job Title"), max_length=100)
-    job_start_date = models.DateField(_("Job Start Date"))
-    job_end_date = models.DateField(_("Job End Date"), null=True, blank=True)
-    birthdate = models.DateField(_("Date of Birth"))
-
-    resume = models.FileField(
-        _("Resume"),
-        upload_to="teacher_files/",
-    )
-
-    is_valid = models.BooleanField(
-        _("Is Valid"),
-        default=True,
-    )
+    resume = models.FileField(verbose_name=_("Resume"), upload_to="Instructor_resume/")
 
     class Meta:
-        verbose_name = _("Teacher")
-        verbose_name_plural = _("Teachers")
+        verbose_name = _("Instructor")
+        verbose_name_plural = _("Instructors")
 
     def __str__(self):
         return f"Teacher: {self.user.username} - {self.job_title}"
 
 
-class ApplyTeacher(models.Model):
-    GENDER_CHOICES = (
-        ("M", _("Male")),
-        ("F", _("Female")),
-    )
+class ApplyInstructor(BaseModel):
+    class Gender(models.TextChoices):
+        MALE = (
+            "M",
+            _("MALE"),
+        )
+        FEMALE = "F", _("FEMALE")
 
-    STATUS_CHOICES = (
-        ("pending", _("Pending")),
-        ("approved", _("Approved")),
-        ("rejected", _("Rejected")),
-    )
+    class STATUS(models.TextChoices):
+        pending = "PENDING", _("PENDING")
+        approved = "APPROVED", _("APPROVED")
+        rejected = "REJECTED", _("REJECTED")
 
-    first_name = models.CharField(_("First Name"), max_length=100)
-    last_name = models.CharField(_("Last Name"), max_length=100)
-    gender = models.CharField(
-        _("Gender"), max_length=1, choices=GENDER_CHOICES, default="M"
-    )
+    first_name = models.CharField(verbose_name=_("first name"), max_length=255)
+    last_name = models.CharField(verbose_name=_("last name"), max_length=255)
 
     phone = models.CharField(
-        _("Phone"), max_length=11, unique=True, validators=[validators.validate_phone]
+        verbose_name="profile phone",
+        max_length=11,
+        validators=[validators.validate_phone],
+        unique=True,
     )
-    email = models.EmailField(_("Email"), unique=True)
-    address = models.TextField(_("Address"))
+    gender = models.CharField(
+        verbose_name=_("gender"),
+        max_length=10,
+        choices=Gender.choices,
+    )
+    email = models.EmailField(verbose_name=_("email address"), unique=True)
+    address = models.TextField(verbose_name=_("address"))
 
-    resume = models.FileField(
-        _("Resume"),
-        upload_to="teacher_files/",
-    )
+    resume = models.FileField(verbose_name=_("Resume"), upload_to="Instructor_resume/")
 
     status = models.CharField(
-        _("Status"), max_length=20, choices=STATUS_CHOICES, default="pending"
+        verbose_name=_("status"),
+        max_length=20,
+        choices=STATUS.choices,
+        default=STATUS.pending,
     )
-    created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
-    updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
 
     class Meta:
-        verbose_name = _("Apply Teacher")
-        verbose_name_plural = _("Apply Teachers")
-        ordering = ("-updated_at",)
+        verbose_name = _("Apply Instructor")
+        verbose_name_plural = _("Apply Instructors")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.status}"
