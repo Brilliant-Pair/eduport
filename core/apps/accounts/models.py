@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -95,11 +95,11 @@ class UserManager(BaseUserManager):
             raise ValueError(_("Superuser must have password."))
 
         return self.create_user(
-            username=username, email=email, password=password**extra_fields
+            username=username, email=email, password=password, **extra_fields
         )
 
 
-class User(AbstractBseUser, PermissionsMixin, BaseModel):
+class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     class Role(models.TextChoices):
         STUDENT = "S", _("STUDENT")
         INSTRUCTOR = "I", _("INSTRUCTOR")
@@ -129,8 +129,10 @@ class User(AbstractBseUser, PermissionsMixin, BaseModel):
 
     last_login = models.DateTimeField(_("last login"), blank=True, null=True)
 
-    USERNAME_FILED = "email"
-    REQUIRED_FILES = ["username"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = [
+        "username",
+    ]
 
     objects = UserManager()
 
@@ -152,7 +154,7 @@ class Profile(models.Model):
         FEMALE = "F", _("FEMALE")
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
+        get_user_model(), on_delete=models.CASCADE, related_name="profile"
     )
     first_name = models.CharField(
         verbose_name=_("first name"), max_length=255, blank=True, null=True
@@ -171,7 +173,7 @@ class Profile(models.Model):
         blank=True,
         validators=[validators.validate_phone],
     )
-    gender = model.models.CharField(
+    gender = models.CharField(
         verbose_name=_("gender"),
         max_length=10,
         choices=Gender.choices,
@@ -179,7 +181,7 @@ class Profile(models.Model):
         null=True,
     )
     full_address = models.TextField(verbose_name="full address", null=True, blank=True)
-    facebook = models.models.URLField(
+    facebook = models.URLField(
         verbose_name=_("Facebook URL"),
         max_length=255,
         blank=True,
@@ -237,7 +239,7 @@ class Teacher(models.Model):
     )
 
     user = models.OneToOneField(
-        "CustomUser",
+        get_user_model(),
         on_delete=models.CASCADE,
         verbose_name=_("User"),
         related_name="teacher",
