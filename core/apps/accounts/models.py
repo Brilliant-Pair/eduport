@@ -300,3 +300,77 @@ class ApplyInstructor(BaseModel):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.status}"
+
+
+class Skill(BaseModel):
+    class Level(models.TextChoices):
+        basic = "Basic", _("Basic")
+        intermediate = "Intermediate", _("Intermediate")
+        advanced = "Advanced", _("Advanced")
+
+    instructor = models.ForeignKey(
+        Instructor,
+        verbose_name="instructor skill",
+        on_delete=models.CASCADE,
+        related_name="skills",
+    )
+    name = models.CharField(verbose_name=_("skill name"), max_length=255)
+    level = models.CharField(verbose_name="skill level", choices=Level.choices)
+
+    class Meta:
+        verbose_name = _("Skill")
+        verbose_name_plural = _("Skills")
+
+
+class Education(BaseModel):
+    class Degree(models.TextChoices):
+        BACHELOR = "Bachelor", _("Bachelor's Degree")
+        MASTER = "Master", _("Master's Degree")
+        DOCTORATE = "Doctorate", _("Doctorate Degree")
+        PROFESSIONAL = "Professional", _("Professional Degree")
+        DIPLOMA = "Diploma", _("Diploma/Certificate")
+        OTHER = "Other", _("Other")
+
+    instructor = models.ForeignKey(
+        Instructor,
+        verbose_name="instructor education",
+        on_delete=models.CASCADE,
+        related_name="educations",
+    )
+    major = models.CharField(verbose_name="education major", max_length=255)
+    degree = models.CharField(verbose_name="education degree", choices=Degree.choices)
+    institution = models.CharField(verbose_name="education institution", max_length=255)
+    start = models.DateField(verbose_name="education start date")
+    end = models.DateField(verbose_name="education end date", blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Eduction")
+        verbose_name_plural = _("Eductions")
+
+    @property
+    def is_finished(self):
+        return self.end is not None
+
+
+class Experience(BaseModel):
+    class Level(models.TextChoices):
+        INTERN = "INTERN", _("INTERN")
+        JUNIOR = "JUNIOR", _("JUNIOR")
+        MID = "MID", _("MID")
+        SENIOR = "SENIOR", _("SENIOR")
+
+    instructor = models.ForeignKey(
+        Instructor,
+        verbose_name=_("instructor experience"),
+        on_delete=models.CASCADE,
+        related_name="experiences",
+    )
+    job_title = models.CharField(verbose_name=_("job title"), max_length=255)
+    company = models.CharField(verbose_name=_("company"), max_length=255)
+    level = models.CharField(verbose_name=_("job level"), choices=Level.choices)
+    start = models.DateField(verbose_name="job start date")
+    end = models.DateField(verbose_name="job end date", blank=True, null=True)
+
+    @property
+    def is_finished(self):
+        return self.end is not None

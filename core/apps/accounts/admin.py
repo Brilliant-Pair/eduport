@@ -13,7 +13,7 @@ class InstructorAdmin(admin.ModelAdmin):
         "job_start_date",
     )
     list_editable = ["status"]
-    list_filter = ["status", "job_title","job_start_date"]
+    list_filter = ["status", "job_title", "job_start_date"]
     search_fields = ["user__username", "user__email", "job_title"]
 
 
@@ -26,6 +26,8 @@ class ApplyInstructorAdmin(admin.ModelAdmin):
         "status",
         "updated_at",
     )
-    list_editable = ["status",]
+    list_editable = [
+        "status",
+    ]
     list_filter = ["gender", "status"]
     search_fields = ["first_name", "last_name", "email", "phone"]
