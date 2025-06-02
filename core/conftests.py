@@ -1,8 +1,15 @@
-from apps.accounts.tests.factories import ProfileFactory, UserFactory
+from apps.accounts.tests.factories import (
+    ApplyInstructor,
+    InstructorFactory,
+    ProfileFactory,
+    UserFactory,
+)
 from pytest_factoryboy import register
 
 register(UserFactory)
 register(ProfileFactory)
+register(InstructorFactory)
+register(ApplyInstructor)
 
 
 @pytest.fixture
@@ -53,3 +60,23 @@ def user_with_profile(normal_user, profile_factory):
 @pytest.fixture
 def superuser_with_profile(super_user, profile_factory):
     return profile_factory(user=super_user)
+
+
+@pytest.fixture
+def instructor(instructor_factory):
+    return instructor_factory()
+
+
+@pytest.fixture
+def active_instructor(instructor_factory):
+    return instructor_factory(active=True)
+
+
+@pytest.fixture
+def inactive_instructor(instructor_factory):
+    return instructor_factory(not_active=True)
+
+
+@pytest.fixture
+def current_instructor(instructor_factory):
+    return instructor_factory(still_working=True)

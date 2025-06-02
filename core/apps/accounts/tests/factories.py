@@ -1,8 +1,17 @@
+from datetime import date, timedelta
+
 import factory
 from django.contrib.auth import get_user_model
 from faker import Factory as FakerFactory
 
-from ..models import Profile
+from ..models import (
+    ApplyInstructor,
+    Education,
+    Experience,
+    Instructor,
+    Profile,
+    Skill,
+)
 
 faker = FakerFactory.create()
 farsi_faker = FakerFactory.create("fa_IR")
@@ -73,3 +82,95 @@ class ProfileFactory(factory.django.DjangoModelFactory):
         private = factory.Trait(is_public=False)
         male = factory.Trait(gender=Profile.gender.MALE)
         female = factory.Trait(gender=Profile.gender.FEMALE)
+
+
+class InstructorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Instructor
+
+    user = factory.SubFactory(UserFactory)
+    status = factory.Iterator([True, False])
+    birthdate = factory.fuzzy.FuzzyDate(
+        start_date=date(1960, 1, 1), end_date=date(2000, 1, 1)
+    )
+    experience_year = factory.fuzzy.FuzzyInteger(low=0, high=30)
+    job_title = factory.LazyAttribute(lambda x: faker.job())
+    job_start_date = factory.fuzzy.FuzzyDate(
+        start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
+    )
+    job_end_date = factory.LazyAttribute(
+        lambda o: faker.date_between_dates(
+            date_start=o.job_start_date, date_end=date.today()
+        )
+    )
+    resume = factory.django.FileField(filename="resume.pdf")
+
+    class Params:
+        active = factory.Trait(status=True)
+        not_active = factory.Trait(status=False)
+        still_working = factory.Trait(job_end_date=None)
+
+
+class InstructorApplyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ApplyInstructor
+
+    first_name = factory.LazyAttribute(lambda x: farsi_faker.first_name())
+    last_name = factory.LazyAttribute(lambda x: farsi_faker.last_name())
+    phone = factory.LazyAttribute(lambda x: farsi_faker.phone())
+    gender = factory.Iterator(
+        [ApplyInstructor.Gender.MALE, ApplyInstructor.Gender.FEMALE]
+    )
+    email = factory.LazyAttribute(lambda x: faker.email())
+    address = factory.LazyAttribute(lambda x: faker.address())
+    resume = factory.django.FileField(filename="resume.pdf")
+    status = factory.Iterator([status[0] for status in ApplyInstructor.STATUS.choices])
+
+
+class SkillFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Skill
+
+    instructor = factory.SubFactory(InstructorFactory)
+    name = factory.LazyAttribute(lambda x: faker.skill())
+    level = factory.Iterator([level[0] for level in Skill.Level.choices])
+
+
+class EducationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Education
+
+    instructor = factory.SubFactory(InstructorFactory)
+    major = factory.LazyAttribute(lambda x: faker.major())
+    degree = factory.Iterator([degree[0] for degree in Education.Degree.choices])
+    institution = factory.LazyAttribute(
+        lambda x: f"University of {faker.school_name()}"
+    )
+    start = factory.fuzzy.FuzzyDate(
+        start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
+    )
+    end = factory.LazyAttribute(
+        lambda o: faker.date_between_dates(date_start=o.start, end=date.today())
+    )
+
+    class Params:
+        still_studying = factory.Trait(end=None)
+
+
+class ExperienceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Experience
+
+    instructor = factory.SubFactory(InstructorFactory)
+    job_title = factory.LazyAttribute(lambda x: faker.job())
+    company = factory.LazyAttribute(lambda x: faker.last_name())
+    level = factory.Iterator([level[0] for level in Experience.Level.choices])
+    start = factory.fuzzy.FuzzyDate(
+        start_date=date(2010, 1, 1), end_date=date.today - timedelta(days=365)
+    )
+    end = factory.LazyAttribute(
+        lambda o: faker.date_between_dates(date_start=o.start, end=date.today())
+    )
+
+    class Params:
+        still_working = factory.Trait(end=None)

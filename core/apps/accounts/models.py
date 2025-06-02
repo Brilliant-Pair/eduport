@@ -264,9 +264,9 @@ class ApplyInstructor(BaseModel):
         FEMALE = "F", _("FEMALE")
 
     class STATUS(models.TextChoices):
-        pending = "PENDING", _("PENDING")
-        approved = "APPROVED", _("APPROVED")
-        rejected = "REJECTED", _("REJECTED")
+        PENDING = "PENDING", _("PENDING")
+        APPROVED = "APPROVED", _("APPROVED")
+        REJECTED = "REJECTED", _("REJECTED")
 
     first_name = models.CharField(verbose_name=_("first name"), max_length=255)
     last_name = models.CharField(verbose_name=_("last name"), max_length=255)
@@ -291,7 +291,7 @@ class ApplyInstructor(BaseModel):
         verbose_name=_("status"),
         max_length=20,
         choices=STATUS.choices,
-        default=STATUS.pending,
+        default=STATUS.PENDING,
     )
 
     class Meta:
