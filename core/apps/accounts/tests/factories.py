@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 import factory
+import factory.fuzzy
 from django.contrib.auth import get_user_model
 from faker import Factory as FakerFactory
 
@@ -23,20 +24,23 @@ class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.LazyAttribute(lambda x: faker.username())
+    username = factory.LazyAttribute(lambda x: faker.name())
     email = factory.LazyAttribute(lambda x: faker.email())
-    is_active = True
-    is_staff = False
-    is_superuser = False
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        manager = cls._get_manager(model_class)
+    class Params:
+        normal = factory.Trait(is_active=True, is_staff=False, is_superuser=False)
+        not_active = factory.Trait(is_active=False, is_staff=False, is_superuser=False)
+        staff = factory.Trait(is_active=True, is_staff=True, is_superuser=False)
+        superuser = factory.Trait(is_active=True, is_staff=True, is_superuser=True)
 
-        if "is_superuser" in kwargs:
-            return manager.create_superuser(**kwargs)
-        else:
-            return manager.create_user(**kwargs)
+    # @classmethod
+    # def _create(cls, model_class, *args, **kwargs):
+    #     manager = cls._get_manager(model_class)
+
+    #     if "is_superuser" in kwargs:
+    #         return manager.create_superuser(password=faker.password(),**kwargs)
+    #     else:
+    #         return manager.create_user(**kwargs)
 
 
 class ProfileFactory(factory.django.DjangoModelFactory):
@@ -49,7 +53,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     avatar = factory.django.ImageField(color=faker.color())
     caption = factory.LazyAttribute(lambda x: farsi_faker.sentence())
     phone = factory.LazyAttribute(lambda x: farsi_faker.phone())
-    gender = factory.Iterator([Profile.GENDER.MALE, Profile.GENDER.FEMALE])
+    gender = factory.Iterator([Profile.Gender.MALE, Profile.Gender.FEMALE])
     full_address = factory.LazyAttribute(farsi_faker.address())
     facebook = factory.LazyAttribute(
         lambda x: f"https://facebook.com/{faker.user_name()}"
@@ -80,8 +84,8 @@ class ProfileFactory(factory.django.DjangoModelFactory):
         )
         public = factory.Trait(is_public=True)
         private = factory.Trait(is_public=False)
-        male = factory.Trait(gender=Profile.gender.MALE)
-        female = factory.Trait(gender=Profile.gender.FEMALE)
+        male = factory.Trait(gender=Profile.Gender.MALE)
+        female = factory.Trait(gender=Profile.Gender.FEMALE)
 
 
 class InstructorFactory(factory.django.DjangoModelFactory):
@@ -111,7 +115,7 @@ class InstructorFactory(factory.django.DjangoModelFactory):
         still_working = factory.Trait(job_end_date=None)
 
 
-class InstructorApplyFactory(factory.django.DjangoModelFactory):
+class ApplyInstructorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ApplyInstructor
 
@@ -166,7 +170,7 @@ class ExperienceFactory(factory.django.DjangoModelFactory):
     company = factory.LazyAttribute(lambda x: faker.last_name())
     level = factory.Iterator([level[0] for level in Experience.Level.choices])
     start = factory.fuzzy.FuzzyDate(
-        start_date=date(2010, 1, 1), end_date=date.today - timedelta(days=365)
+        start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
     )
     end = factory.LazyAttribute(
         lambda o: faker.date_between_dates(date_start=o.start, end=date.today())

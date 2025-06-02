@@ -137,7 +137,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.username}" if username else f"{self.email}"
+        return self.email
 
 
 class Profile(BaseModel):
