@@ -224,7 +224,7 @@ class Profile(BaseModel):
         """Returns the user's full name (if available)."""
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
-        return self.user.get_full_name() if self.user else ""
+        return self.user.username
 
 
 class Instructor(BaseModel):

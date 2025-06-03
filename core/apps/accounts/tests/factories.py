@@ -3,6 +3,7 @@ from datetime import date, timedelta
 import factory
 import factory.fuzzy
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
 from faker import Factory as FakerFactory
 
 from ..models import (
@@ -20,6 +21,11 @@ farsi_faker = FakerFactory.create("fa_IR")
 User = get_user_model()
 
 
+def fake_farsi_phone_number():
+    return f"09{str(faker.random_number(digits=9, fix_len=True))}"
+
+
+@factory.django.mute_signals(post_save)
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
@@ -33,7 +39,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         staff = factory.Trait(is_active=True, is_staff=True, is_superuser=False)
         superuser = factory.Trait(is_active=True, is_staff=True, is_superuser=True)
 
-    # @classmethod
+    # @classmethod``
     # def _create(cls, model_class, *args, **kwargs):
     #     manager = cls._get_manager(model_class)
 
@@ -52,9 +58,9 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     last_name = factory.LazyAttribute(lambda x: farsi_faker.last_name())
     avatar = factory.django.ImageField(color=faker.color())
     caption = factory.LazyAttribute(lambda x: farsi_faker.sentence())
-    phone = factory.LazyAttribute(lambda x: farsi_faker.phone())
+    phone = factory.LazyAttribute(lambda x: fake_farsi_phone_number())
     gender = factory.Iterator([Profile.Gender.MALE, Profile.Gender.FEMALE])
-    full_address = factory.LazyAttribute(farsi_faker.address())
+    full_address = factory.LazyAttribute(lambda x: farsi_faker.address())
     facebook = factory.LazyAttribute(
         lambda x: f"https://facebook.com/{faker.user_name()}"
     )
@@ -121,7 +127,7 @@ class ApplyInstructorFactory(factory.django.DjangoModelFactory):
 
     first_name = factory.LazyAttribute(lambda x: farsi_faker.first_name())
     last_name = factory.LazyAttribute(lambda x: farsi_faker.last_name())
-    phone = factory.LazyAttribute(lambda x: farsi_faker.phone())
+    phone = factory.LazyAttribute(lambda x: fake_farsi_phone_number())
     gender = factory.Iterator(
         [ApplyInstructor.Gender.MALE, ApplyInstructor.Gender.FEMALE]
     )
@@ -129,6 +135,11 @@ class ApplyInstructorFactory(factory.django.DjangoModelFactory):
     address = factory.LazyAttribute(lambda x: faker.address())
     resume = factory.django.FileField(filename="resume.pdf")
     status = factory.Iterator([status[0] for status in ApplyInstructor.STATUS.choices])
+
+    class Params:
+        pending = factory.Trait(status=ApplyInstructor.STATUS.PENDING)
+        approved = factory.Trait(status=ApplyInstructor.STATUS.APPROVED)
+        rejected = factory.Trait(status=ApplyInstructor.STATUS.REJECTED)
 
 
 class SkillFactory(factory.django.DjangoModelFactory):

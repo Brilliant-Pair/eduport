@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
@@ -179,4 +180,140 @@ class TestUser:
 
 @pytest.mark.django_db
 class TestProfile:
-    pass
+    def test_create_complete_profile(self, complete_profile):
+        assert complete_profile.id is not None
+        assert complete_profile.user is not None
+        assert complete_profile.first_name is not None
+        assert complete_profile.last_name is not None
+        assert complete_profile.avatar is not None
+        assert complete_profile.caption is not None
+        assert complete_profile.phone is not None
+        assert complete_profile.gender is not None
+        assert complete_profile.full_address is not None
+        assert complete_profile.facebook is not None
+        assert complete_profile.github is not None
+        assert complete_profile.linkedin is not None
+        assert complete_profile.twitter is not None
+        assert complete_profile.github is not None
+        assert complete_profile.website_url is not None
+        assert complete_profile.is_public is not None
+
+    def test_create__minimal_profile(self, empty_profile):
+        assert empty_profile.id is not None
+        assert empty_profile.user is not None
+
+    def test_create_public_profile(self, public_profile):
+        assert public_profile.id is not None
+        assert public_profile.user is not None
+        assert public_profile.is_public is True
+
+    def test_create_private_profile(self, private_profile):
+        assert private_profile.id is not None
+        assert private_profile.user is not None
+        assert private_profile.is_public is False
+
+    def test_create_public_male(self, male_profile):
+        assert male_profile.id is not None
+        assert male_profile.user is not None
+        assert male_profile.gender == "M"
+
+    def test_create_private_female(self, female_profile):
+        assert female_profile.id is not None
+        assert female_profile.user is not None
+        assert female_profile.gender == "F"
+
+    def test_profile_str(self, complete_profile):
+        assert str(complete_profile) == f"{complete_profile.user.username}'s Profile"
+
+    def test_get_full_name_with_profile_names(self, complete_profile):
+        assert (
+            complete_profile.get_full_name()
+            == f"{complete_profile.first_name} {complete_profile.last_name}"
+        )
+
+    def test_get_full_name_with_username(self, user_with_profile):
+        user_with_profile.first_name = None
+        user_with_profile.last_name = None
+        assert user_with_profile.get_full_name() == f"{user_with_profile.user.username}"
+
+    def test_superuser_profile(self, superuser_with_profile):
+        assert superuser_with_profile.user.is_superuser is True
+        assert superuser_with_profile.user.is_staff is True
+
+    def test_phone_validation_valid(self, complete_profile):
+        valid_phones = ["09919909312", "09171643342", "09933213441"]
+
+        for phone in valid_phones:
+            complete_profile.phone = phone
+            complete_profile.full_clean()
+
+    def test_phone_validation_invalid(self, complete_profile):
+        valid_phones = ["+09919909312", "08171643342", "92933213441"]
+
+        for phone in valid_phones:
+            complete_profile.phone = phone
+            with pytest.raises(ValidationError) as error:
+                complete_profile.full_clean()
+
+
+@pytest.mark.django_db
+class TestInstructor:
+    def test_create_instructor(self, instructor):
+        assert instructor.id is not None
+        assert instructor.status is not None
+        assert instructor.birthdate is not None
+        assert instructor.experience_year is not None
+        assert instructor.job_title is not None
+        assert instructor.job_start_date is not None
+        assert instructor.job_end_date is not None
+        assert instructor.resume is not None
+
+    def test_create_active_instructor(self, active_instructor):
+        assert active_instructor.id is not None
+        assert active_instructor.status is True
+
+    def test_create_not_active_instructor(self, inactive_instructor):
+        assert inactive_instructor.id is not None
+        assert inactive_instructor.status is False
+
+    def test_create_instructor_factory(self, current_instructor):
+        assert current_instructor.id is not None
+        assert current_instructor.job_end_date is None
+
+    def test_instructor_str(self, instructor):
+        assert (
+            str(instructor)
+            == f"Teacher: {instructor.user.username} - {instructor.job_title}"
+        )
+
+
+@pytest.mark.django_db
+class TestApplyInstructor:
+    def test_create_apply_instructor(self, apply_instructor):
+        assert apply_instructor.id is not None
+        assert apply_instructor.first_name is not None
+        assert apply_instructor.last_name is not None
+        assert apply_instructor.phone is not None
+        assert apply_instructor.gender is not None
+        assert apply_instructor.email is not None
+        assert apply_instructor.address is not None
+        assert apply_instructor.resume is not None
+        assert apply_instructor.status is not None
+
+    def test_create_pending_apply_instructor(self, pending_apply):
+        assert pending_apply.id is not None
+        assert pending_apply.status == "PENDING"
+
+    def test_create_approved_apply_instructor(self, approved_apply):
+        assert approved_apply.id is not None
+        assert approved_apply.status == "APPROVED"
+
+    def test_create_rejected_apply_instructor(self, rejected_apply):
+        assert rejected_apply.id is not None
+        assert rejected_apply.status == "REJECTED"
+
+    def test_str_apply_instructor(self, apply_instructor):
+        assert (
+            str(apply_instructor)
+            == f"{apply_instructor.first_name} {apply_instructor.last_name} - {apply_instructor.status}"
+        )
