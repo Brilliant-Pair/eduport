@@ -147,8 +147,15 @@ class SkillFactory(factory.django.DjangoModelFactory):
         model = Skill
 
     instructor = factory.SubFactory(InstructorFactory)
-    name = factory.LazyAttribute(lambda x: faker.skill())
+    name = factory.LazyAttribute(lambda x: faker.job())
     level = factory.Iterator([level[0] for level in Skill.Level.choices])
+
+
+    class Params:
+        basic = factory.Trait(level=Skill.Level.BASIC)
+        intermediate = factory.Trait(level=Skill.Level.INTERMEDIATE)
+        advanced = factory.Trait(level=Skill.Level.ADVANCED)
+
 
 
 class EducationFactory(factory.django.DjangoModelFactory):
@@ -156,20 +163,26 @@ class EducationFactory(factory.django.DjangoModelFactory):
         model = Education
 
     instructor = factory.SubFactory(InstructorFactory)
-    major = factory.LazyAttribute(lambda x: faker.major())
+    major = factory.LazyAttribute(lambda x: faker.job())
     degree = factory.Iterator([degree[0] for degree in Education.Degree.choices])
     institution = factory.LazyAttribute(
-        lambda x: f"University of {faker.school_name()}"
+        lambda x: f"University of {faker.company()}"
     )
     start = factory.fuzzy.FuzzyDate(
         start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
     )
     end = factory.LazyAttribute(
-        lambda o: faker.date_between_dates(date_start=o.start, end=date.today())
+        lambda o: faker.date_between_dates(date_start=o.start, date_end=date.today())
     )
 
     class Params:
         still_studying = factory.Trait(end=None)
+        bachelor = factory.Trait(degree=Education.Degree.BACHELOR)
+        master = factory.Trait(degree=Education.Degree.MASTER)
+        doctorate = factory.Trait(degree=Education.Degree.DOCTORATE)
+        professional = factory.Trait(degree=Education.Degree.PROFESSIONAL)
+        diploma = factory.Trait(degree=Education.Degree.DIPLOMA)
+        other = factory.Trait(degree=Education.Degree.OTHER)
 
 
 class ExperienceFactory(factory.django.DjangoModelFactory):
@@ -184,8 +197,12 @@ class ExperienceFactory(factory.django.DjangoModelFactory):
         start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
     )
     end = factory.LazyAttribute(
-        lambda o: faker.date_between_dates(date_start=o.start, end=date.today())
+        lambda o: faker.date_between_dates(date_start=o.start, date_end=date.today())
     )
 
     class Params:
         still_working = factory.Trait(end=None)
+        intern = factory.Trait(level=Experience.Level.INTERN)
+        junior = factory.Trait(level=Experience.Level.JUNIOR)
+        mid = factory.Trait(level=Experience.Level.MID)
+        senior = factory.Trait(level=Experience.Level.SENIOR)
