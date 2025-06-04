@@ -63,3 +63,9 @@ backups:
 
 remove-all:
 	docker compose -f local.yaml down --rmi all
+
+pytest:
+	docker exec -it web pytest
+
+pytest-cov:
+	docker exec -it web pytest -p no:warnings  --cov=. --cov-report html
