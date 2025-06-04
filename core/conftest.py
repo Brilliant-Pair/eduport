@@ -4,6 +4,9 @@ from apps.accounts.tests.factories import (
     InstructorFactory,
     ProfileFactory,
     UserFactory,
+    SkillFactory,
+    EducationFactory,
+    ExperienceFactory,
 )
 from django.contrib.auth import get_user_model
 from pytest_factoryboy import register
@@ -12,8 +15,12 @@ register(UserFactory)
 register(ProfileFactory)
 register(InstructorFactory)
 register(ApplyInstructorFactory)
+register(SkillFactory)
+register(EducationFactory)
+register(ExperienceFactory)
 
 
+# ------------------- User -----------------
 @pytest.fixture
 def normal_user(user_factory):
     return user_factory(normal=True)
@@ -39,6 +46,7 @@ def user_manager():
     return get_user_model().objects
 
 
+# ------------------- Profile -----------------
 @pytest.fixture
 def complete_profile(profile_factory):
     return profile_factory()
@@ -79,6 +87,8 @@ def superuser_with_profile(super_user, profile_factory):
     return profile_factory(user=super_user)
 
 
+
+# ------------------- Instructor -----------------
 @pytest.fixture
 def instructor(instructor_factory):
     return instructor_factory()
@@ -98,7 +108,7 @@ def inactive_instructor(instructor_factory):
 def current_instructor(instructor_factory):
     return instructor_factory(still_working=True)
 
-
+# ------------------- Apply Instructor -----------------
 @pytest.fixture
 def apply_instructor(apply_instructor_factory):
     return apply_instructor_factory()
@@ -117,3 +127,93 @@ def approved_apply(apply_instructor_factory):
 @pytest.fixture
 def rejected_apply(apply_instructor_factory):
     return apply_instructor_factory(rejected=True)
+
+
+# ------------------- Skill -----------------
+
+
+@pytest.fixture
+def basic_skill(skill_factory):
+    return skill_factory(basic=True)
+
+
+@pytest.fixture
+def intermediate_skill(skill_factory):
+    return skill_factory(intermediate=True)
+
+
+@pytest.fixture
+def advanced_skill(skill_factory):
+    return skill_factory(advanced=True)
+
+
+# ------------------- Education -----------------
+@pytest.fixture
+def bachelor_education(education_factory):
+    return education_factory(bachelor=True)
+
+
+@pytest.fixture
+def master_education(education_factory):
+    return education_factory(master=True)
+
+
+@pytest.fixture
+def doctorate_education(education_factory):
+    return education_factory(doctorate=True)
+
+
+@pytest.fixture
+def professional_education(education_factory):
+    return education_factory(professional=True)
+
+
+@pytest.fixture
+def diploma_education(education_factory):
+    return education_factory(diploma=True)
+
+
+@pytest.fixture
+def other_education(education_factory):
+    return education_factory(other=True)
+
+
+@pytest.fixture
+def finished_education(education_factory):
+    return education_factory()
+
+
+@pytest.fixture
+def ongoing_education(education_factory):
+    return education_factory(still_studying=True)
+
+
+# ------------------- Experience -----------------
+@pytest.fixture
+def intern_experience(experience_factory):
+    return experience_factory(intern=True)
+
+
+@pytest.fixture
+def junior_experience(experience_factory):
+    return experience_factory(junior=True)
+
+
+@pytest.fixture
+def mid_experience(experience_factory):
+    return experience_factory(mid=True)
+
+
+@pytest.fixture
+def senior_experience(experience_factory):
+    return experience_factory(senior=True)
+
+
+@pytest.fixture
+def finished_experience(experience_factory):
+    return experience_factory()
+
+
+@pytest.fixture
+def ongoing_experience(experience_factory):
+    return experience_factory(still_working=True)
