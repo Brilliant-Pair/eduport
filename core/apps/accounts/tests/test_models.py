@@ -2,6 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from apps.accounts import models
 
 User = get_user_model()
 
@@ -215,12 +216,12 @@ class TestProfile:
     def test_create_public_male(self, male_profile):
         assert male_profile.id is not None
         assert male_profile.user is not None
-        assert male_profile.gender == "M"
+        assert male_profile.gender == models.Profile.Gender.MALE
 
     def test_create_private_female(self, female_profile):
         assert female_profile.id is not None
         assert female_profile.user is not None
-        assert female_profile.gender == "F"
+        assert female_profile.gender == models.Profile.Gender.FEMALE
 
     def test_profile_str(self, complete_profile):
         assert str(complete_profile) == f"{complete_profile.user.username}'s Profile"
@@ -302,18 +303,90 @@ class TestApplyInstructor:
 
     def test_create_pending_apply_instructor(self, pending_apply):
         assert pending_apply.id is not None
-        assert pending_apply.status == "PENDING"
+        assert pending_apply.status == models.ApplyInstructor.STATUS.PENDING
 
     def test_create_approved_apply_instructor(self, approved_apply):
         assert approved_apply.id is not None
-        assert approved_apply.status == "APPROVED"
+        assert approved_apply.status == models.ApplyInstructor.STATUS.APPROVED
 
     def test_create_rejected_apply_instructor(self, rejected_apply):
         assert rejected_apply.id is not None
-        assert rejected_apply.status == "REJECTED"
+        assert rejected_apply.status == models.ApplyInstructor.STATUS.REJECTED
 
     def test_str_apply_instructor(self, apply_instructor):
         assert (
             str(apply_instructor)
             == f"{apply_instructor.first_name} {apply_instructor.last_name} - {apply_instructor.status}"
         )
+
+
+@pytest.mark.django_db
+class TestSkill:
+    def test_create_basic_skill(self, basic_skill):
+        assert basic_skill.id is not None
+        assert basic_skill.level == models.Skill.Level.BASIC
+
+    def test_create_intermediate_skill(self, intermediate_skill):
+        assert intermediate_skill.id is not None
+        assert intermediate_skill.level == models.Skill.Level.INTERMEDIATE
+
+    def test_create_advanced_skill(self, advanced_skill):
+        assert advanced_skill.id is not None
+        assert advanced_skill.level == models.Skill.Level.ADVANCED
+
+    def test_skill_instructor_relation(self, basic_skill):
+        assert basic_skill.instructor is not None
+        assert basic_skill.instructor.skills.count() >= 1
+        assert basic_skill in basic_skill.instructor.skills.all()
+
+
+@pytest.mark.django_db
+class TestEducation:
+
+    def test_finished_education_is_finished(self, finished_education):
+        assert finished_education.is_finished is True
+        assert finished_education.end is not None
+
+    def test_ongoing_education_is_not_finished(self, ongoing_education):
+        assert ongoing_education.is_finished is False
+        assert ongoing_education.end is None
+
+    def test_start_end_dates(self, finished_education):
+        assert finished_education.start < finished_education.end
+
+    def test_instructor_relation(self, finished_education):
+        instructor = finished_education.instructor
+        assert instructor is not None
+        assert finished_education in instructor.educations.all()
+
+
+@pytest.mark.django_db
+class TestExperience:
+
+    def test_intern_level(self, intern_experience):
+        assert intern_experience.level == models.Experience.Level.INTERN
+
+    def test_junior_level(self, junior_experience):
+        assert junior_experience.level == models.Experience.Level.JUNIOR
+
+    def test_mid_level(self, mid_experience):
+        assert mid_experience.level == models.Experience.Level.MID
+
+    def test_senior_level(self, senior_experience):
+        assert senior_experience.level == models.Experience.Level.SENIOR
+
+    def test_finished_experience_is_finished(self, finished_experience):
+        assert finished_experience.is_finished is True
+        assert finished_experience.end is not None
+
+    def test_ongoing_experience_is_not_finished(self, ongoing_experience):
+        assert ongoing_experience.is_finished is False
+        assert ongoing_experience.end is None
+
+    def test_start_end_dates(self, finished_experience):
+        assert finished_experience.start < finished_experience.end
+
+    def test_instructor_relation(self, finished_experience):
+        instructor = finished_experience.instructor
+        assert instructor is not None
+        assert finished_experience in instructor.experiences.all()
