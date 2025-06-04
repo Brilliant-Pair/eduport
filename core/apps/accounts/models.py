@@ -304,9 +304,9 @@ class ApplyInstructor(BaseModel):
 
 class Skill(BaseModel):
     class Level(models.TextChoices):
-        basic = "Basic", _("Basic")
-        intermediate = "Intermediate", _("Intermediate")
-        advanced = "Advanced", _("Advanced")
+        BASIC = "BASIC", _("BASIC")
+        INTERMEDIATE = "INTERMEDIATE", _("INTERMEDIATE")
+        ADVANCED = "ADVANCED", _("ADVANCED")
 
     instructor = models.ForeignKey(
         Instructor,
