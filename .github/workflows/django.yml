@@ -1,0 +1,44 @@
+name: Django CI with Docker
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  docker-ci:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.6
+        options: --privileged
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set up Python (for Make dependencies if needed)
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+    - name: Install make
+      run: sudo apt-get update && sudo apt-get install -y make
+
+    - name: Build Docker containers
+      run: make l-build
+
+    - name: Run tests
+      run: make ci-pytest
+
+    - name: Shut down containers
+      if: always()
+      run: make l-down-v

@@ -67,5 +67,8 @@ remove-all:
 pytest:
 	docker exec -it web pytest
 
+ci-pytest:
+	docker exec web pytest
+
 pytest-cov:
 	docker exec -it web pytest -p no:warnings  --cov=. --cov-report html
