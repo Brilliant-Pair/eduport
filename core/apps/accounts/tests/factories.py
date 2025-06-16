@@ -150,12 +150,10 @@ class SkillFactory(factory.django.DjangoModelFactory):
     name = factory.LazyAttribute(lambda x: faker.job())
     level = factory.Iterator([level[0] for level in Skill.Level.choices])
 
-
     class Params:
         basic = factory.Trait(level=Skill.Level.BASIC)
         intermediate = factory.Trait(level=Skill.Level.INTERMEDIATE)
         advanced = factory.Trait(level=Skill.Level.ADVANCED)
-
 
 
 class EducationFactory(factory.django.DjangoModelFactory):
@@ -165,9 +163,7 @@ class EducationFactory(factory.django.DjangoModelFactory):
     instructor = factory.SubFactory(InstructorFactory)
     major = factory.LazyAttribute(lambda x: faker.job())
     degree = factory.Iterator([degree[0] for degree in Education.Degree.choices])
-    institution = factory.LazyAttribute(
-        lambda x: f"University of {faker.company()}"
-    )
+    institution = factory.LazyAttribute(lambda x: f"University of {faker.company()}")
     start = factory.fuzzy.FuzzyDate(
         start_date=date(2010, 1, 1), end_date=date.today() - timedelta(days=365)
     )

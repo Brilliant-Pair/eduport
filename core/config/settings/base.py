@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
 # Application definition
 THIRD_PARTY_APPS = []
 
-LOCAL_APPS = ["apps.accounts.apps.AccountsConfig"]
+LOCAL_APPS = ["apps.accounts.apps.AccountsConfig", "apps.home.apps.HomeConfig"]
 
 
 INSTALLED_APPS = [

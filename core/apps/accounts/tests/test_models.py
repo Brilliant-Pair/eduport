@@ -1,8 +1,8 @@
 import pytest
+from apps.accounts import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from apps.accounts import models
 
 User = get_user_model()
 

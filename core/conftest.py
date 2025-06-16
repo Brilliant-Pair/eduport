@@ -1,12 +1,12 @@
 import pytest
 from apps.accounts.tests.factories import (
     ApplyInstructorFactory,
-    InstructorFactory,
-    ProfileFactory,
-    UserFactory,
-    SkillFactory,
     EducationFactory,
     ExperienceFactory,
+    InstructorFactory,
+    ProfileFactory,
+    SkillFactory,
+    UserFactory,
 )
 from django.contrib.auth import get_user_model
 from pytest_factoryboy import register
@@ -87,7 +87,6 @@ def superuser_with_profile(super_user, profile_factory):
     return profile_factory(user=super_user)
 
 
-
 # ------------------- Instructor -----------------
 @pytest.fixture
 def instructor(instructor_factory):
@@ -107,6 +106,7 @@ def inactive_instructor(instructor_factory):
 @pytest.fixture
 def current_instructor(instructor_factory):
     return instructor_factory(still_working=True)
+
 
 # ------------------- Apply Instructor -----------------
 @pytest.fixture
