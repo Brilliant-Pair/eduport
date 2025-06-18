@@ -5,3 +5,4 @@ celery==5.4.0
 redis==5.2.0
 flower==2.0.1
 uuid==1.30
+django-allauth[socialaccount]==65.9.0
