@@ -1,6 +1,14 @@
 version: "3.9"
 
 services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.0
+    container_name: mailhog
+    ports:
+      - "8025:8025"
+    networks:
+      - eduport-network
+
   web:
     container_name: web
     image: web
@@ -20,6 +28,7 @@ services:
       - "8000:8000"
     depends_on:
       - db 
+      - mailhog
     networks:
       - eduport-network
 

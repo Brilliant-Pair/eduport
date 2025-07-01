@@ -1,0 +1,4 @@
+{% autoescape off %}
+    Please click on below link to confirm your registration.
+    http://{{ domain }}{% url 'accounts_app:activate' uidb64=uid token=token %}
+{% endautoescape %}
